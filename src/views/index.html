@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html class="no-js consumer" lang="en">
+<head>
+    <script nonce="d6GbkkBWnZDF1kZYF_qySw">
+      (function (e, p) {
+        var m = location.href.match(/platform=(win8|win|mac|linux|cros)/);
+        e.id =
+          (m && m[1]) ||
+          (p.indexOf("Windows NT 6.2") > -1
+            ? "win8"
+            : p.indexOf("Windows") > -1
+              ? "win"
+              : p.indexOf("Mac") > -1
+                ? "mac"
+                : p.indexOf("CrOS") > -1
+                  ? "cros"
+                  : "linux");
+        e.className = e.className.replace(/\bno-js\b/, "js");
+      })(document.documentElement, window.navigator.userAgent);
+    </script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <meta charset="utf-8"/>
+    <meta
+            content="initial-scale=1, minimum-scale=1, width=device-width"
+            name="viewport"
+    />
+    <meta
+            content="Google Chrome is a browser that combines a minimal design with sophisticated technology to make the web faster, safer, and easier."
+            name="description"
+    />
+    <title>Demo</title>
+    <link
+            href="../images/chrome-32.png"
+            rel="icon"
+            type="image/ico"
+    />
+    <link
+            href="../stylesheets/chrome.min.css"
+            rel="stylesheet"
+    />
+    <style>
+        #info {
+            font-size: 20px;
+        }
+
+        #div_start {
+            float: right;
+        }
+
+        #headline {
+            text-decoration: none;
+        }
+
+        #results {
+            font-size: 14px;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: left;
+            min-height: 150px;
+        }
+
+        #start_button {
+            border: 0;
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .interim {
+            color: gray;
+        }
+
+        .final {
+            color: black;
+            padding-right: 3px;
+        }
+
+        .button {
+            display: none;
+        }
+
+        .marquee {
+            margin: 20px auto;
+        }
+
+        #buttons {
+            margin: 10px 0;
+            position: relative;
+            top: -50px;
+        }
+
+        #copy {
+            margin-top: 20px;
+        }
+
+        #copy > div {
+            display: none;
+            margin: 0 70px;
+        }
+
+        .input__container {
+            margin-top: 20px;
+            width: 100%;
+            height: 180px;
+            color: #000;
+        }
+
+        .in__container {
+            width: 50%;
+            height: 100%;
+            float: left;
+        }
+
+        .out__container {
+            width: 50%;
+            height: 100%;
+            float: left;
+        }
+
+        @media screen and ( max-width: 650px ) {
+            .input__container {
+                height: 360px;
+            }
+
+            .in__container {
+                width: 100%;
+                height: 50%;
+            }
+
+            .out__container {
+                width: 100%;
+                height: 50%;
+            }
+        }
+
+        .show__title {
+            margin: 10px 0;
+            font-size: 20px;
+        }
+
+        .show__input {
+            height: 25px;
+            width: 150px;
+            margin-right: 10px;
+            padding: 0 10px;
+        }
+
+        .show__res {
+            height: 85px;
+            width: 70%;
+            margin: 10px auto 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #999;
+        }
+
+        .show__btn {
+            display: inline-block;
+            width: 50px;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            border: 1px solid #999;
+            cursor: pointer;
+        }
+    </style>
+    <style>
+        span.c1 {
+            font-weight: bolder;
+        }
+        .select-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .select-container input {
+           cursor: pointer;
+        }
+    </style>
+</head>
+<body class="" id="grid">
+<div class="browser-landing" id="main">
+    <div class="compact marquee-stacked" id="marquee">
+        <div class="marquee-copy">
+            <h1>
+            <span
+                    class="c1"
+            >后检语音纠错系统 演示</span
+            >
+            </h1>
+        </div>
+    </div>
+    <div class="select-container">
+        <div>
+            <span>
+                <input type="radio" name="mode" value="default" checked >
+                <span>默认模式(速度快, 准确率低)</span>
+            </span>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span>
+                <input type="radio" name="mode" value="gpt">
+                <span>智能模式(速度慢, 准确率高)</span>
+            </span>
+        </div>
+    </div>
+    <div class="compact marquee">
+        <div id="info">
+            <p id="info_start">
+                请点击麦克风图标, 并开始说话
+            </p>
+            <p id="info_speak_now" style="display: none">请讲话...</p>
+            <p id="info_no_speech" style="display: none">
+                未检测到语音, 您可能需要调整您的
+                <a
+                        href="https://support.google.com/chrome/bin/answer.py?hl=en&answer=1407892"
+                >麦克风设置</a
+                >.
+            </p>
+            <p id="info_no_microphone" style="display: none">
+                找不到麦克风, 确保已安装麦克风并且
+                <a
+                        href="https://support.google.com/chrome/bin/answer.py?hl=en&answer=1407892"
+                >
+                    麦克风设置</a
+                >
+                配置正确
+            </p>
+            <p id="info_allow" style="display: none">
+                请点击 “允许” 按钮启用麦克风
+            </p>
+            <p id="info_denied" style="display: none">
+                麦克风的使用权限被拒绝
+            </p>
+            <p id="info_blocked" style="display: none">
+                使用麦克风的权限被阻止, 如需更改，请转到
+                chrome://settings/content/microphone
+            </p>
+            <p id="info_upgrade" style="display: none">
+                此浏览器不支持 Web Speech API 请升级或使用
+                <a href="https://www.google.com/chrome">Chrome</a> 浏览器 25 版本以上.
+            </p>
+        </div>
+        <div id="div_start">
+            <button id="start_button" onclick="startButton(event)">
+                <img
+                        alt="Start"
+                        id="start_img"
+                        src="../images/mic.gif"
+                />
+            </button>
+        </div>
+        <div id="results">
+            <span class="final" id="final_span"></span>
+            <span class="interim" id="interim_span"></span>
+        </div>
+        <div style="display: none" class="compact marquee" id="div_language">
+            <select id="select_language" onchange="updateCountry()"></select
+            >&nbsp;&nbsp;
+            <select id="select_dialect"></select>
+        </div>
+        <div class="input__container">
+            <div class="in__container">
+                <div class="show__title">字典录入</div>
+                <input id="input1" class="show__input" type="text"/>
+                <div id="btn1" class="show__btn">提交</div>
+                <div id="res1" class="show__res">返回内容</div>
+            </div>
+            <div class="out__container">
+                <div class="show__title">字典删除</div>
+                <input id="input2" class="show__input" type="text"/>
+                <div id="btn2" class="show__btn">提交</div>
+                <div id="res2" class="show__res">返回内容</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../javascripts/chrome.min.js"></script>
+<script>
+  const input1 = document.getElementById('input1')
+  const input2 = document.getElementById('input2')
+  const btn1 = document.getElementById('btn1')
+  const btn2 = document.getElementById('btn2')
+  const res1 = document.getElementById('res1')
+  const res2 = document.getElementById('res2')
+  input1.onkeydown = (e) => {
+    if (e.code === 'Enter') {
+        btn1.click()
+    }
+  }
+  input2.onkeydown = (e) => {
+    if (e.code === 'Enter') {
+      btn2.click()
+    }
+  }
+  btn1.onclick = () => {
+    if (input1.value) {
+      res1.innerHTML = '数据请求中...'
+      axios.get(`../api/write?str=${input1.value}`).then(resp => {
+        if (resp.data.errno === 0) {
+          res1.innerHTML = '录入成功'
+        } else {
+          res1.innerHTML = resp.data.message
+        }
+      })
+      input1.value = ''
+    } else {
+      res1.innerHTML = "录入数据不能为空"
+    }
+  }
+  btn2.onclick = () => {
+    if (input2.value) {
+      res2.innerHTML = '数据请求中...'
+      axios.get(`../api/delete?str=${input2.value}`).then(resp => {
+        res2.innerHTML = resp.data.message
+      })
+      input2.value = ''
+    } else {
+      res2.innerHTML = "不能删除空数据"
+    }
+  }
+</script>
+<script>
+  var chrmMenuBar = new chrm.ui.MenuBar();
+  chrmMenuBar.decorate("nav");
+  var chrmscroll = new chrm.ui.SmoothScroll("scroll");
+  chrmscroll.init();
+
+  window.___gcfg = {lang: "en"};
+</script>
+<script>
+  var langs = [
+    ["Afrikaans", ["af-ZA"]],
+    ["አማርኛ", ["am-ET"]],
+    ["Azərbaycanca", ["az-AZ"]],
+    ["বাংলা", ["bn-BD", "বাংলাদেশ"], ["bn-IN", "ভারত"]],
+    ["Bahasa Indonesia", ["id-ID"]],
+    ["Bahasa Melayu", ["ms-MY"]],
+    ["Català", ["ca-ES"]],
+    ["Čeština", ["cs-CZ"]],
+    ["Dansk", ["da-DK"]],
+    ["Deutsch", ["de-DE"]],
+    [
+      "English",
+      ["en-AU", "Australia"],
+      ["en-CA", "Canada"],
+      ["en-IN", "India"],
+      ["en-KE", "Kenya"],
+      ["en-TZ", "Tanzania"],
+      ["en-GH", "Ghana"],
+      ["en-NZ", "New Zealand"],
+      ["en-NG", "Nigeria"],
+      ["en-ZA", "South Africa"],
+      ["en-PH", "Philippines"],
+      ["en-GB", "United Kingdom"],
+      ["en-US", "United States"],
+    ],
+    [
+      "Español",
+      ["es-AR", "Argentina"],
+      ["es-BO", "Bolivia"],
+      ["es-CL", "Chile"],
+      ["es-CO", "Colombia"],
+      ["es-CR", "Costa Rica"],
+      ["es-EC", "Ecuador"],
+      ["es-SV", "El Salvador"],
+      ["es-ES", "España"],
+      ["es-US", "Estados Unidos"],
+      ["es-GT", "Guatemala"],
+      ["es-HN", "Honduras"],
+      ["es-MX", "México"],
+      ["es-NI", "Nicaragua"],
+      ["es-PA", "Panamá"],
+      ["es-PY", "Paraguay"],
+      ["es-PE", "Perú"],
+      ["es-PR", "Puerto Rico"],
+      ["es-DO", "República Dominicana"],
+      ["es-UY", "Uruguay"],
+      ["es-VE", "Venezuela"],
+    ],
+    ["Euskara", ["eu-ES"]],
+    ["Filipino", ["fil-PH"]],
+    ["Français", ["fr-FR"]],
+    ["Basa Jawa", ["jv-ID"]],
+    ["Galego", ["gl-ES"]],
+    ["ગુજરાતી", ["gu-IN"]],
+    ["Hrvatski", ["hr-HR"]],
+    ["IsiZulu", ["zu-ZA"]],
+    ["Íslenska", ["is-IS"]],
+    ["Italiano", ["it-IT", "Italia"], ["it-CH", "Svizzera"]],
+    ["ಕನ್ನಡ", ["kn-IN"]],
+    ["ភាសាខ្មែរ", ["km-KH"]],
+    ["Latviešu", ["lv-LV"]],
+    ["Lietuvių", ["lt-LT"]],
+    ["മലയാളം", ["ml-IN"]],
+    ["मराठी", ["mr-IN"]],
+    ["Magyar", ["hu-HU"]],
+    ["ລາວ", ["lo-LA"]],
+    ["Nederlands", ["nl-NL"]],
+    ["नेपाली भाषा", ["ne-NP"]],
+    ["Norsk bokmål", ["nb-NO"]],
+    ["Polski", ["pl-PL"]],
+    ["Português", ["pt-BR", "Brasil"], ["pt-PT", "Portugal"]],
+    ["Română", ["ro-RO"]],
+    ["සිංහල", ["si-LK"]],
+    ["Slovenščina", ["sl-SI"]],
+    ["Basa Sunda", ["su-ID"]],
+    ["Slovenčina", ["sk-SK"]],
+    ["Suomi", ["fi-FI"]],
+    ["Svenska", ["sv-SE"]],
+    ["Kiswahili", ["sw-TZ", "Tanzania"], ["sw-KE", "Kenya"]],
+    ["ქართული", ["ka-GE"]],
+    ["Հայերեն", ["hy-AM"]],
+    [
+      "தமிழ்",
+      ["ta-IN", "இந்தியா"],
+      ["ta-SG", "சிங்கப்பூர்"],
+      ["ta-LK", "இலங்கை"],
+      ["ta-MY", "மலேசியா"],
+    ],
+    ["తెలుగు", ["te-IN"]],
+    ["Tiếng Việt", ["vi-VN"]],
+    ["Türkçe", ["tr-TR"]],
+    ["اُردُو", ["ur-PK", "پاکستان"], ["ur-IN", "بھارت"]],
+    ["Ελληνικά", ["el-GR"]],
+    ["български", ["bg-BG"]],
+    ["Pусский", ["ru-RU"]],
+    ["Српски", ["sr-RS"]],
+    ["Українська", ["uk-UA"]],
+    ["한국어", ["ko-KR"]],
+    [
+      "中文",
+      ["cmn-Hans-CN", "普通话 (中国大陆)"],
+      ["cmn-Hans-HK", "普通话 (香港)"],
+      ["cmn-Hant-TW", "中文 (台灣)"],
+      ["yue-Hant-HK", "粵語 (香港)"],
+    ],
+    ["日本語", ["ja-JP"]],
+    ["हिन्दी", ["hi-IN"]],
+    ["ภาษาไทย", ["th-TH"]],
+  ];
+
+  for (var i = 0; i < langs.length; i++) {
+    select_language.options[i] = new Option(langs[i][0], i);
+  }
+  // Set default language / dialect.
+  select_language.selectedIndex = 56;
+  updateCountry();
+  select_dialect.selectedIndex = 0;
+  showInfo("info_start");
+
+  function updateCountry() {
+    for (var i = select_dialect.options.length - 1; i >= 0; i--) {
+      select_dialect.remove(i);
+    }
+    var list = langs[select_language.selectedIndex];
+    for (var i = 1; i < list.length; i++) {
+      select_dialect.options.add(new Option(list[i][1], list[i][0]));
+    }
+    select_dialect.style.visibility =
+      list[1].length == 1 ? "hidden" : "visible";
+  }
+
+  var create_email = false;
+  var final_transcript = "";
+  var recognizing = false;
+  var ignore_onend;
+  var start_timestamp;
+  if (!("webkitSpeechRecognition" in window)) {
+    upgrade();
+  } else {
+    start_button.style.display = "inline-block";
+    var recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;  // 是否连续
+    recognition.interimResults = true;  // 是否实时展示结果
+
+    recognition.onstart = function () {
+      recognizing = true;
+      showInfo("info_speak_now");
+      start_img.src = "../images/mic-animate.gif";
+    };
+
+    recognition.onerror = function (event) {
+      if (event.error == "no-speech") {
+        start_img.src =
+          "../images/mic.gif";
+        showInfo("info_no_speech");
+        ignore_onend = true;
+      }
+      if (event.error == "audio-capture") {
+        start_img.src =
+          "../images/mic.gif";
+        showInfo("info_no_microphone");
+        ignore_onend = true;
+      }
+      if (event.error == "not-allowed") {
+        if (event.timeStamp - start_timestamp < 100) {
+          showInfo("info_blocked");
+        } else {
+          showInfo("info_denied");
+        }
+        ignore_onend = true;
+      }
+    };
+
+    recognition.onend = function () {
+      recognizing = false;
+      if (ignore_onend) {
+        return;
+      }
+      start_img.src = "../images/mic.gif";
+      if (!final_transcript) {
+        showInfo("info_start");
+        return;
+      }
+      showInfo("");
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+        var range = document.createRange();
+        range.selectNode(document.getElementById("final_span"));
+        window.getSelection().addRange(range);
+      }
+      if (create_email) {
+        create_email = false;
+      }
+    };
+
+    recognition.onresult = function (event) {
+      var interim_transcript = "";
+      if (typeof event.results == "undefined") {
+        recognition.onend = null;
+        recognition.stop();
+        upgrade();
+        return;
+      }
+      for (var i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          final_transcript += event.results[i][0].transcript;
+        } else {
+          interim_transcript += event.results[i][0].transcript;
+        }
+      }
+      final_transcript = capitalize(final_transcript);
+      const mode = [...document.getElementsByName("mode")].filter(item => item.checked)[0].value;
+      // 后检纠错系统
+      final_transcript && axios.get(`../api/search?str=${final_transcript}&mode=${mode}`).then(resp => {
+        resp.data.errno === 0 && (final_span.innerHTML = linebreak(resp.data.data));
+      })
+
+      interim_span.innerHTML = linebreak(interim_transcript);
+      if (final_transcript || interim_transcript) {
+        showButtons("inline-block");
+      }
+    };
+  }
+
+  function upgrade() {
+    start_button.style.visibility = "hidden";
+    showInfo("info_upgrade");
+  }
+
+  var two_line = /\n\n/g;
+  var one_line = /\n/g;
+
+  function linebreak(s) {
+    return s.replace(two_line, "<p></p>").replace(one_line, "<br>");
+  }
+
+  var first_char = /\S/;
+
+  function capitalize(s) {
+    return s.replace(first_char, function (m) {
+      return m.toUpperCase();
+    });
+  }
+
+  function startButton(event) {
+    if (recognizing) {
+      recognition.stop();
+      return;
+    }
+    final_transcript = "";
+    recognition.lang = select_dialect.value;
+    recognition.start();
+    ignore_onend = false;
+    final_span.innerHTML = "";
+    interim_span.innerHTML = "";
+    start_img.src = "../images/mic-slash.gif";
+    showInfo("info_allow");
+    showButtons("none");
+    start_timestamp = event.timeStamp;
+  }
+
+  function showInfo(s) {
+    if (s) {
+      for (var child = info.firstChild; child; child = child.nextSibling) {
+        if (child.style) {
+          child.style.display = child.id == s ? "inline" : "none";
+        }
+      }
+      info.style.visibility = "visible";
+    } else {
+      info.style.visibility = "hidden";
+    }
+  }
+
+  var current_style;
+
+  function showButtons(style) {
+    if (style == current_style) {
+      return;
+    }
+    current_style = style;
+  }
+</script>
+</body>
+</html>
